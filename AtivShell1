@@ -1,0 +1,52 @@
+$arquivo ="listausuario.csv"
+
+get-content $arquivo | foreach-object {
+$dados = $_ -split ";"
+$usuario = $dados[0]
+$departamento = $dados[1]
+
+$grupoAD = "SSP_" + $departamento
+
+if (-not (Get-ADGroup -Filter { Name -eq $grupoAD } )) {
+	New_ADGroup -Name $grupoAD -GroupScope Global -GroupCategory Security -Description "Senai-SP - Grupo $departamento"
+	
+}
+
+if (-not (Get-ADUser -Filter { SamAccountName -eq $usuario } )) {
+	New-ADUser -SamAccountName $usuario
+		-UserPrincipalName 
+		-Name $usuario 
+		-departent $departamento
+		-AccountPassword (ConvertTo-SecureString "Senha@134" -AsPlainText -Force) 
+		-ChangePasswordAtLogon $true 
+	
+	} else {
+		print "Usuario: $usuario ja exite no AD."
+	}
+}
+
+if (Get-ADGroupMember -Identity $grupoAD | Where-Object { $_.SamAccountName -eq $usuario }) {
+    print "Validação: Usuário $usuario foi corretamente adicionado ao grupo $grupoAD."
+} else {
+    print "Erro: Usuário $usuario NÃO foi adicionado ao grupo $grupoAD."
+}
+
+		
+
+
+	
+	
+	
+
+		
+		
+       
+
+
+
+	
+
+	
+	
+
+
